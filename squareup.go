@@ -36,7 +36,7 @@ type Client struct {
 	UserAgent string
 
 	// Services used for talking to different parts of the Square API.
-
+	TerminalAction TerminalActionService
 	// Optional function called after every successful request made to the DO APIs
 	onRequestCompleted RequestCompletionCallback
 

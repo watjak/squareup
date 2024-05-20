@@ -14,7 +14,9 @@ const (
 
 // TerminalActionService is an interface for interfacing with the Square Terminal Action API
 type TerminalActionService interface {
+	// Create(ctx context.Context, action *TerminalAction) (*TerminalAction, *Response, error)
 	Search(ctx context.Context, options *ListOptions, query *TerminalActionQuery) (*TerminalAction, *Response, error)
+	Get(ctx context.Context, actionId string) (*TerminalAction, *Response, error)
 }
 
 var _ TerminalActionService = &TerminalActionServiceOp{}
@@ -39,16 +41,16 @@ type TerminalAction struct {
 }
 
 type Action struct {
-	Id              string    `json:"id"`
-	DeviceId        string    `json:"device_id"`
-	Status          string    `json:"status"`
-	CancelReason    string    `json:"cancel_reason"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
-	LocationId      string    `json:"location_id"`
-	Type            string    `json:"type"`
-	AppId           string    `json:"app_id"`
-	CheckoutOptions `json:"checkout_options"`
+	Id              string          `json:"id"`
+	DeviceId        string          `json:"device_id"`
+	Status          string          `json:"status"`
+	CancelReason    string          `json:"cancel_reason"`
+	CreatedAt       time.Time       `json:"created_at"`
+	UpdatedAt       time.Time       `json:"updated_at"`
+	LocationId      string          `json:"location_id"`
+	Type            string          `json:"type"`
+	AppId           string          `json:"app_id"`
+	CheckoutOptions CheckoutOptions `json:"checkout_options"`
 }
 
 type AmountMoney struct {
@@ -87,6 +89,27 @@ func (t TerminalActionServiceOp) Search(ctx context.Context, options *ListOption
 		return nil, nil, err
 	}
 	req, err := t.client.NewRequest(ctx, "POST", path, query)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	root := new(TerminalAction)
+	resp, err := t.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return root, resp, err
+}
+
+func (t TerminalActionServiceOp) Get(ctx context.Context, actionId string) (*TerminalAction, *Response, error) {
+	if len(actionId) == 0 {
+		return nil, nil, NewArgError("actionId", "cannot be an empty string")
+	}
+
+	path := fmt.Sprintf("%s/%s", terminalBasePath, actionId)
+
+	req, err := t.client.NewRequest(ctx, "GET", path, nil)
 	if err != nil {
 		return nil, nil, err
 	}
