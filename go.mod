@@ -1,4 +1,4 @@
-module squareup
+module github.com/watjak/squareup
 
 go 1.22
 
