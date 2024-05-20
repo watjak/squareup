@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"strings"
 )
 
 const (
@@ -18,10 +19,7 @@ const (
 	userAgent      = "squareup/" + libraryVersion
 	mediaType      = "application/json"
 
-	headerRateLimit     = "RateLimit-Limit"
-	headerRateRemaining = "RateLimit-Remaining"
-	headerRateReset     = "RateLimit-Reset"
-	headerRequestID     = "x-request-id"
+	headerRequestID = "x-request-id"
 )
 
 // Client manages communication with the Square Connect API.
@@ -37,6 +35,7 @@ type Client struct {
 
 	// Services used for talking to different parts of the Square API.
 	TerminalAction TerminalActionService
+
 	// Optional function called after every successful request made to the DO APIs
 	onRequestCompleted RequestCompletionCallback
 
@@ -107,13 +106,12 @@ func addOptions(s string, opt interface{}) (string, error) {
 
 // NewFromToken creates a new Square client from a given access token.
 func NewFromToken(token string) *Client {
-	baseURL, _ := url.Parse(defaultBaseURL)
-	return &Client{
-		HTTPClient: http.DefaultClient,
-		BaseURL:    baseURL,
-		UserAgent:  userAgent,
-		headers:    map[string]string{"Authorization": "Bearer " + token},
+	cleanToken := strings.Trim(strings.TrimSpace(token), "'")
+	client, err := New(http.DefaultClient, SetAuthToken(cleanToken))
+	if err != nil {
+		panic(err)
 	}
+	return client
 }
 
 // NewClient creates a new Square client.
@@ -131,6 +129,8 @@ func NewClient(httpClient *http.Client) *Client {
 	}
 
 	c.headers = make(map[string]string)
+
+	c.TerminalAction = &TerminalActionServiceOp{client: c}
 
 	return c
 }
@@ -181,6 +181,14 @@ func SetRequestHeaders(headers map[string]string) ClientOpt {
 	}
 }
 
+// SetAuthToken sets the Authorization header on the client that is sent on each HTTP request.
+func SetAuthToken(token string) ClientOpt {
+	return func(c *Client) error {
+		c.headers = map[string]string{"Authorization": "Bearer " + token}
+		return nil
+	}
+}
+
 // NewRequest creates an API request. A relative URL can be provided in urlStr, which will be resolved to the
 // BaseURL of the Client. Relative URLS should always be specified without a preceding slash. If specified, the
 // value pointed to by body is JSON encoded and included in as the request body.
@@ -212,6 +220,7 @@ func (c *Client) NewRequest(ctx context.Context, method, urlStr string, body int
 			return nil, err
 		}
 		req.Header.Set("Content-Type", mediaType)
+		req.Header.Set("Square-Version", libraryVersion)
 	}
 
 	for k, v := range c.headers {

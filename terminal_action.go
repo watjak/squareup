@@ -14,8 +14,7 @@ const (
 
 // TerminalActionService is an interface for interfacing with the Square Terminal Action API
 type TerminalActionService interface {
-	// Create(ctx context.Context, action *TerminalAction) (*TerminalAction, *Response, error)
-	Search(ctx context.Context, options *ListOptions, query *TerminalActionQuery) (*TerminalAction, *Response, error)
+	Search(ctx context.Context, options *ListOptions, query *TerminalActionQuery) ([]TerminalAction, *Response, error)
 	Get(ctx context.Context, actionId string) (*TerminalAction, *Response, error)
 }
 
@@ -25,22 +24,7 @@ type TerminalActionServiceOp struct {
 	client *Client
 }
 
-type TerminalActionQuery struct {
-	Filter struct {
-		DeviceId string `json:"device_id"`
-		Status   string `json:"status"`
-		Type     string `json:"type"`
-	} `json:"filter"`
-	Sort struct {
-		SortOrder string `json:"sort_order"`
-	} `json:"sort"`
-}
-
 type TerminalAction struct {
-	Action []Action `json:"action"`
-}
-
-type Action struct {
 	Id              string          `json:"id"`
 	DeviceId        string          `json:"device_id"`
 	Status          string          `json:"status"`
@@ -82,7 +66,19 @@ type CheckoutOptions struct {
 	PaymentOptions `json:"payment_options"`
 }
 
-func (t TerminalActionServiceOp) Search(ctx context.Context, options *ListOptions, query *TerminalActionQuery) (*TerminalAction, *Response, error) {
+// TerminalActionQuery represents the query parameters for the Search method
+type TerminalActionQuery struct {
+	Filter struct {
+		DeviceId string `json:"device_id"`
+		Status   string `json:"status"`
+		Type     string `json:"type"`
+	} `json:"filter"`
+	Sort struct {
+		SortOrder string `json:"sort_order"`
+	} `json:"sort"`
+}
+
+func (t TerminalActionServiceOp) Search(ctx context.Context, options *ListOptions, query *TerminalActionQuery) ([]TerminalAction, *Response, error) {
 	path := fmt.Sprintf("%s/%s", terminalBasePath, searchPath)
 	path, err := addOptions(path, options)
 	if err != nil {
@@ -93,13 +89,13 @@ func (t TerminalActionServiceOp) Search(ctx context.Context, options *ListOption
 		return nil, nil, err
 	}
 
-	root := new(TerminalAction)
+	root := new([]TerminalAction)
 	resp, err := t.client.Do(ctx, req, root)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	return root, resp, err
+	return *root, resp, err
 }
 
 func (t TerminalActionServiceOp) Get(ctx context.Context, actionId string) (*TerminalAction, *Response, error) {
