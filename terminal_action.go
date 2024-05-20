@@ -15,7 +15,7 @@ const (
 // TerminalActionService is an interface for interfacing with the Square Terminal Action API
 type TerminalActionService interface {
 	Search(ctx context.Context, options *ListOptions, query *TerminalActionQuery) ([]TerminalAction, *Response, error)
-	Get(ctx context.Context, actionId string) (*TerminalAction, *Response, error)
+	Get(ctx context.Context, actionId string) (*TerminalActionEntry, *Response, error)
 }
 
 var _ TerminalActionService = &TerminalActionServiceOp{}
@@ -25,6 +25,10 @@ type TerminalActionServiceOp struct {
 }
 
 type TerminalAction struct {
+	Action []TerminalActionEntry `json:"action"`
+}
+
+type TerminalActionEntry struct {
 	Id              string          `json:"id"`
 	DeviceId        string          `json:"device_id"`
 	Status          string          `json:"status"`
@@ -78,12 +82,13 @@ type TerminalActionQuery struct {
 	} `json:"sort"`
 }
 
-func (t TerminalActionServiceOp) Search(ctx context.Context, options *ListOptions, query *TerminalActionQuery) ([]TerminalAction, *Response, error) {
+func (t *TerminalActionServiceOp) Search(ctx context.Context, options *ListOptions, query *TerminalActionQuery) ([]TerminalAction, *Response, error) {
 	path := fmt.Sprintf("%s/%s", terminalBasePath, searchPath)
 	path, err := addOptions(path, options)
 	if err != nil {
 		return nil, nil, err
 	}
+
 	req, err := t.client.NewRequest(ctx, "POST", path, query)
 	if err != nil {
 		return nil, nil, err
@@ -98,7 +103,7 @@ func (t TerminalActionServiceOp) Search(ctx context.Context, options *ListOption
 	return *root, resp, err
 }
 
-func (t TerminalActionServiceOp) Get(ctx context.Context, actionId string) (*TerminalAction, *Response, error) {
+func (t *TerminalActionServiceOp) Get(ctx context.Context, actionId string) (*TerminalActionEntry, *Response, error) {
 	if len(actionId) == 0 {
 		return nil, nil, NewArgError("actionId", "cannot be an empty string")
 	}
@@ -110,7 +115,7 @@ func (t TerminalActionServiceOp) Get(ctx context.Context, actionId string) (*Ter
 		return nil, nil, err
 	}
 
-	root := new(TerminalAction)
+	root := new(TerminalActionEntry)
 	resp, err := t.client.Do(ctx, req, root)
 	if err != nil {
 		return nil, resp, err

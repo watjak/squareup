@@ -107,6 +107,7 @@ func addOptions(s string, opt interface{}) (string, error) {
 // NewFromToken creates a new Square client from a given access token.
 func NewFromToken(token string) *Client {
 	cleanToken := strings.Trim(strings.TrimSpace(token), "'")
+
 	client, err := New(http.DefaultClient, SetAuthToken(cleanToken))
 	if err != nil {
 		panic(err)
