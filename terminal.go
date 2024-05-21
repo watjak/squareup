@@ -45,10 +45,7 @@ type TerminalCheckoutEntry struct {
 type CreateTerminalCheckout struct {
 	IdempotencyKey string `json:"idempotency_key"`
 	Checkout       struct {
-		AmountMoney struct {
-			Currency string `json:"currency"`
-			Amount   int    `json:"amount"`
-		} `json:"amount_money"`
+		AmountMoney   AmountMoney `json:"amount_money"`
 		DeviceOptions struct {
 			DeviceId          string `json:"device_id"`
 			CollectSignature  bool   `json:"collect_signature"`
