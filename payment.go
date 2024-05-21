@@ -27,7 +27,7 @@ type PaymentServiceOp struct {
 }
 
 type ListPayments struct {
-	Payment []PaymentEntry `json:"payment"`
+	Payment []PaymentEntry `json:"payments"`
 }
 
 type Payment struct {
