@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	terminalBasePath = "v2/terminals/actions"
+	terminalActionBasePath = "v2/terminals/actions"
 
-	searchPath = "search"
+	terminalActionSearchPath = "search"
 )
 
 // TerminalActionService is an interface for interfacing with the Square Terminal Action API
@@ -60,6 +60,8 @@ type AmountMoney struct {
 }
 
 type DeviceOptions struct {
+	DeviceId          string      `json:"device_id"`
+	CollectSignature  bool        `json:"collect_signature"`
 	TipSettings       TipSettings `json:"tip_settings"`
 	SkipReceiptScreen bool        `json:"skip_receipt_screen"`
 }
@@ -158,7 +160,7 @@ type TerminalActionQuery struct {
 }
 
 func (t *TerminalActionServiceOp) Search(ctx context.Context, options *ListOptions, query *TerminalActionQuery) ([]SearchTerminalAction, *Response, error) {
-	path := fmt.Sprintf("%s/%s", terminalBasePath, searchPath)
+	path := fmt.Sprintf("%s/%s", terminalActionBasePath, terminalActionSearchPath)
 	path, err := addOptions(path, options)
 	if err != nil {
 		return nil, nil, err
@@ -183,7 +185,7 @@ func (t *TerminalActionServiceOp) Get(ctx context.Context, actionId string) (*Ge
 		return nil, nil, NewArgError("actionId", "cannot be an empty string")
 	}
 
-	path := fmt.Sprintf("%s/%s", terminalBasePath, actionId)
+	path := fmt.Sprintf("%s/%s", terminalActionBasePath, actionId)
 
 	req, err := t.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
@@ -200,7 +202,7 @@ func (t *TerminalActionServiceOp) Get(ctx context.Context, actionId string) (*Ge
 }
 
 func (t *TerminalActionServiceOp) Create(ctx context.Context, action *CreateTerminalActionEntry) (*GetTerminalAction, *Response, error) {
-	req, err := t.client.NewRequest(ctx, http.MethodPost, terminalBasePath, action)
+	req, err := t.client.NewRequest(ctx, http.MethodPost, terminalActionBasePath, action)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -219,7 +221,7 @@ func (t *TerminalActionServiceOp) Cancel(ctx context.Context, actionId string) (
 		return nil, nil, NewArgError("actionId", "cannot be an empty string")
 	}
 
-	path := fmt.Sprintf("%s/%s/cancel", terminalBasePath, actionId)
+	path := fmt.Sprintf("%s/%s/cancel", terminalActionBasePath, actionId)
 
 	req, err := t.client.NewRequest(ctx, http.MethodPost, path, nil)
 	if err != nil {
@@ -240,7 +242,7 @@ func (t *TerminalActionServiceOp) Dismiss(ctx context.Context, actionId string) 
 		return nil, nil, NewArgError("actionId", "cannot be an empty string")
 	}
 
-	path := fmt.Sprintf("%s/%s/dismiss", terminalBasePath, actionId)
+	path := fmt.Sprintf("%s/%s/dismiss", terminalActionBasePath, actionId)
 
 	req, err := t.client.NewRequest(ctx, http.MethodPost, path, nil)
 	if err != nil {
