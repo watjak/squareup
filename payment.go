@@ -11,7 +11,7 @@ const (
 )
 
 type PaymentService interface {
-	ListPayment(ctx context.Context, options *ListOptions) ([]ListPayments, *Response, error)
+	ListPayment(ctx context.Context, options *ListOptions) (*ListPayments, *Response, error)
 	CreatePayment(ctx context.Context, payment *CreatePayment) (*Payment, *Response, error)
 	CancelByIdempotencyKey(ctx context.Context, id string) (*Payment, *Response, error)
 	GetPayment(ctx context.Context, paymentId string) (*Payment, *Response, error)
@@ -120,7 +120,7 @@ type completePayment struct {
 }
 
 // ListPayment returns a list of payments taken by the account making the request.
-func (s *PaymentServiceOp) ListPayment(ctx context.Context, options *ListOptions) ([]ListPayments, *Response, error) {
+func (s *PaymentServiceOp) ListPayment(ctx context.Context, options *ListOptions) (*ListPayments, *Response, error) {
 	path := PaymentBasePath
 	path, err := addOptions(path, options)
 	if err != nil {
@@ -132,13 +132,13 @@ func (s *PaymentServiceOp) ListPayment(ctx context.Context, options *ListOptions
 		return nil, nil, err
 	}
 
-	var payments []ListPayments
-	resp, err := s.client.Do(ctx, req, &payments)
+	root := new(ListPayments)
+	resp, err := s.client.Do(ctx, req, root)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	return payments, resp, nil
+	return root, resp, nil
 }
 
 // CreatePayment creates a payment.
