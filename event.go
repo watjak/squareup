@@ -34,7 +34,6 @@ type Event struct {
 	Type       EventType  `json:"type"`
 	EventID    string     `json:"event_id"`
 	Data       *EventData `json:"data"`
-	Object     string     `json:"object"`
 }
 
 // GetObjectValue returns the value from the e.Data.Object bag based on the keys hierarchy.

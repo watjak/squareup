@@ -54,26 +54,10 @@ type CreateTerminalActionEntry struct {
 	IdempotencyKey string         `json:"idempotency_key"`
 }
 
-type AmountMoney struct {
-	Amount   int    `json:"amount"`
-	Currency string `json:"currency"`
-}
-
-type DeviceOptions struct {
-	DeviceId          string      `json:"device_id"`
-	CollectSignature  bool        `json:"collect_signature"`
-	TipSettings       TipSettings `json:"tip_settings"`
-	SkipReceiptScreen bool        `json:"skip_receipt_screen"`
-}
-
 type TipSettings struct {
 	SeparateTipScreen bool `json:"separate_tip_screen"`
 	CustomTipField    bool `json:"custom_tip_field"`
 	AllowTipping      bool `json:"allow_tipping"`
-}
-
-type PaymentOptions struct {
-	Autocomplete bool `json:"autocomplete"`
 }
 
 type CheckoutOptions struct {
