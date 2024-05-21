@@ -35,6 +35,8 @@ type Client struct {
 
 	// Services used for talking to different parts of the Square API.
 	TerminalAction TerminalActionService
+	Terminal       TerminalService
+	Payment        PaymentService
 
 	// Optional function called after every successful request made to the DO APIs
 	onRequestCompleted RequestCompletionCallback
@@ -53,6 +55,27 @@ type ListOptions struct {
 
 	// The maximum number of results to return in a single page. This value cannot exceed 100.
 	Limit int `url:"limit,omitempty"`
+
+	// BeginTime is the beginning of the requested reporting period, in RFC 3339 format.
+	BeginTime string `url:"begin_time,omitempty"`
+
+	// EndTime is the end of the requested reporting period, in RFC 3339 format.
+	EndTime string `url:"end_time,omitempty"`
+
+	// SortOrder is the order in which results are listed. One of ASC or DESC.
+	SortOrder string `url:"sort_order,omitempty"`
+
+	// LocationID is the ID of the location to list payments for. If not specified, the endpoint will return payments
+	LocationID string `url:"location_id,omitempty"`
+
+	// Total is the total amount of the payment in the smallest denomination of the currency indicated by currency.
+	Total int `url:"total,omitempty"`
+
+	// Last4 is the last 4 digits of the payment card.
+	Last4 string `url:"last_4,omitempty"`
+
+	// CardBrand is the brand of the payment card (e.g., VISA).
+	CardBrand string `url:"card_brand,omitempty"`
 
 	// Query Body
 	Body interface{} `url:"-"`
@@ -132,6 +155,8 @@ func NewClient(httpClient *http.Client) *Client {
 	c.headers = make(map[string]string)
 
 	c.TerminalAction = &TerminalActionServiceOp{client: c}
+	c.Terminal = &TerminalServiceOp{client: c}
+	c.Payment = &PaymentServiceOp{client: c}
 
 	return c
 }
