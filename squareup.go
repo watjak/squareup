@@ -14,12 +14,20 @@ import (
 )
 
 const (
-	libraryVersion = "2024-05-15"
-	defaultBaseURL = "https://connect.squareupsandbox.com/"
-	userAgent      = "squareup/" + libraryVersion
-	mediaType      = "application/json"
+	libraryVersion    = "2024-05-15"
+	defaultBaseURL    = "https://connect.squareup.com/"
+	defaultSandBoxURL = "https://connect.squareupsandbox.com/"
+	userAgent         = "squareup/" + libraryVersion
+	mediaType         = "application/json"
 
 	headerRequestID = "x-request-id"
+)
+
+type Mode string
+
+var (
+	ModeSandbox Mode = "sandbox"
+	ModeLive    Mode = "live"
 )
 
 // Client manages communication with the Square Connect API.
@@ -89,6 +97,7 @@ type Response struct {
 	Meta *Meta
 }
 
+// ErrorResponse reports one or more errors caused by an API request.
 type ErrorResponse struct {
 	// Http Response that caused this error
 	Response *http.Response
@@ -100,6 +109,7 @@ type ErrorResponse struct {
 	RequestID string `json:"request_id"`
 }
 
+// addOptions adds the parameters in opt as URL query parameters to s. opt must be a struct whose fields contain tags
 func addOptions(s string, opt interface{}) (string, error) {
 	v := reflect.ValueOf(opt)
 
@@ -128,10 +138,10 @@ func addOptions(s string, opt interface{}) (string, error) {
 }
 
 // NewFromToken creates a new Square client from a given access token.
-func NewFromToken(token string) *Client {
+func NewFromToken(token string, mode Mode) *Client {
 	cleanToken := strings.Trim(strings.TrimSpace(token), "'")
 
-	client, err := New(http.DefaultClient, SetAuthToken(cleanToken))
+	client, err := New(http.DefaultClient, mode, SetAuthToken(cleanToken))
 	if err != nil {
 		panic(err)
 	}
@@ -139,12 +149,21 @@ func NewFromToken(token string) *Client {
 }
 
 // NewClient creates a new Square client.
-func NewClient(httpClient *http.Client) *Client {
+func NewClient(httpClient *http.Client, mode Mode) *Client {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
 
-	baseURL, _ := url.Parse(defaultBaseURL)
+	var baseURL *url.URL
+
+	switch mode {
+	case ModeSandbox:
+		baseURL, _ = url.Parse(defaultSandBoxURL)
+	case ModeLive:
+		baseURL, _ = url.Parse(defaultBaseURL)
+	default:
+		baseURL, _ = url.Parse(defaultSandBoxURL)
+	}
 
 	c := &Client{
 		HTTPClient: httpClient,
@@ -165,8 +184,8 @@ func NewClient(httpClient *http.Client) *Client {
 type ClientOpt func(*Client) error
 
 // New creates a new Square client.
-func New(httpClient *http.Client, opts ...ClientOpt) (*Client, error) {
-	c := NewClient(httpClient)
+func New(httpClient *http.Client, mode Mode, opts ...ClientOpt) (*Client, error) {
+	c := NewClient(httpClient, mode)
 	for _, opt := range opts {
 		if err := opt(c); err != nil {
 			return nil, err
@@ -339,6 +358,7 @@ func DoRequestWithClient(
 	return client.Do(req)
 }
 
+// Error returns the error message for the ErrorResponse.
 func (r *ErrorResponse) Error() string {
 	var attempted string
 	if r.RequestID != "" {

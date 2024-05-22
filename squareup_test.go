@@ -24,7 +24,7 @@ func setup() {
 	mux = http.NewServeMux()
 	server = httptest.NewServer(mux)
 
-	client = NewClient(nil)
+	client = NewClient(nil, ModeSandbox)
 	url, _ := url.Parse(server.URL)
 	client.BaseURL = url
 }
@@ -99,12 +99,12 @@ func testClientDefaults(t *testing.T, c *Client) {
 }
 
 func TestNewClient(t *testing.T) {
-	c := NewClient(nil)
+	c := NewClient(nil, ModeSandbox)
 	testClientDefaults(t, c)
 }
 
 func TestNewFromToken(t *testing.T) {
-	c := NewFromToken("myToken")
+	c := NewFromToken("myToken", ModeSandbox)
 	testClientDefaults(t, c)
 }
 
@@ -121,7 +121,7 @@ func TestNewFromToken_cleaned(t *testing.T) {
 
 	for _, tt := range testTokens {
 		t.Run(tt, func(t *testing.T) {
-			c := NewFromToken(tt)
+			c := NewFromToken(tt, ModeSandbox)
 			req, _ := c.NewRequest(ctx, http.MethodGet, server.URL+"/foo", nil)
 			resp, err := c.Do(ctx, req, nil)
 			if err != nil {
@@ -137,7 +137,7 @@ func TestNewFromToken_cleaned(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
-	c, err := New(nil)
+	c, err := New(nil, ModeSandbox)
 
 	if err != nil {
 		t.Fatalf("New(): %v", err)
@@ -146,7 +146,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestNewRequest_get(t *testing.T) {
-	c := NewClient(nil)
+	c := NewClient(nil, ModeSandbox)
 
 	inURL, outURL := "/foo", defaultBaseURL+"foo"
 	req, _ := c.NewRequest(ctx, http.MethodGet, inURL, nil)
@@ -170,7 +170,7 @@ func TestNewRequest_get(t *testing.T) {
 
 func TestCustomUserAgent(t *testing.T) {
 	ua := "testing/0.0.1"
-	c, err := New(nil, SetUserAgent(ua))
+	c, err := New(nil, ModeSandbox, SetUserAgent(ua))
 
 	if err != nil {
 		t.Fatalf("New() unexpected error: %v", err)
@@ -184,7 +184,7 @@ func TestCustomUserAgent(t *testing.T) {
 
 func TestCustomBaseURL(t *testing.T) {
 	baseURL := "http://localhost/foo"
-	c, err := New(nil, SetBaseURL(baseURL))
+	c, err := New(nil, ModeSandbox, SetBaseURL(baseURL))
 
 	if err != nil {
 		t.Fatalf("New() unexpected error: %v", err)
@@ -198,7 +198,7 @@ func TestCustomBaseURL(t *testing.T) {
 
 func TestCustomBaseURL_badURL(t *testing.T) {
 	baseURL := ":"
-	_, err := New(nil, SetBaseURL(baseURL))
+	_, err := New(nil, ModeSandbox, SetBaseURL(baseURL))
 
 	testURLParseError(t, err)
 }
