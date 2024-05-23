@@ -10,10 +10,12 @@ type DeviceOptions struct {
 	CollectSignature  bool        `json:"collect_signature"`
 	TipSettings       TipSettings `json:"tip_settings"`
 	SkipReceiptScreen bool        `json:"skip_receipt_screen"`
+	ShowItemizedCart  bool        `json:"show_itemized_cart,omitempty"`
 }
 
 type PaymentOptions struct {
-	Autocomplete bool `json:"autocomplete"`
+	Autocomplete               bool `json:"autocomplete"`
+	AcceptPartialAuthorization bool `json:"accept_partial_authorization,omitempty"`
 }
 
 type BillingAddress struct {

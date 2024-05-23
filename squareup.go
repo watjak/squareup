@@ -43,7 +43,8 @@ type Client struct {
 
 	// Services used for talking to different parts of the Square API.
 	TerminalAction TerminalActionService
-	Terminal       TerminalService
+	Terminal       TerminalCheckoutService
+	TerminalRefund TerminalRefundService
 	Payment        PaymentService
 
 	// Optional function called after every successful request made to the DO APIs
@@ -174,7 +175,7 @@ func NewClient(httpClient *http.Client, mode Mode) *Client {
 	c.headers = make(map[string]string)
 
 	c.TerminalAction = &TerminalActionServiceOp{client: c}
-	c.Terminal = &TerminalServiceOp{client: c}
+	c.Terminal = &TerminalCheckoutServiceOp{client: c}
 	c.Payment = &PaymentServiceOp{client: c}
 
 	return c
